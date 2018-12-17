@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.curise.eshop.auth.dao.RoleDao">
+
+    <resultMap id="baseResultMap" type="Role">
+        <id property="id" column="id" jdbcType="INTEGER" />
+        <result property="roleName" column="role_name" jdbcType="VARCHAR" />
+        <result property="valid" column="valid" jdbcType="TINYINT" />
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP" />
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP" />
+        <collection property="permissions" fetchType="eager" column="id" select="com.curise.eshop.auth.dao.PermissionDao.findByRoleId"></collection>
+    </resultMap>
+
+    <select id="findByMemberId" resultMap="baseResultMap" parameterType="Integer">
+      select r.* from es_member_role mr,es_role r where mr.role_id = r.id and mr.member_id = #{memberId,jdbcType=INTEGER}
+    </select>
+
+
+</mapper>

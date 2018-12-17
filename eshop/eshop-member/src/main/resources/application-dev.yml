@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: eshop-member
+
+server:
+  port: 1201
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://localhost:1111/eureka/
+
+security:
+  oauth2:
+    resource:
+      id: eshop-member
+      user-info-uri: http://localhost:1202/auth/api/member
+      prefer-token-info: false

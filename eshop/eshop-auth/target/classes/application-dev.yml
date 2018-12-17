@@ -1,0 +1,57 @@
+server:
+  port: 1203
+
+spring:
+  application:
+    name: eshop-auth
+  redis:
+    database: 0
+    host: 192.168.0.117
+    port: 6379
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/eshop_member?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
+    username: root
+    password: root
+  druid:
+    initialSize: 5 #初始化连接大小
+    minIdle: 5     #最小连接池数量
+    maxActive: 20  #最大连接池数量
+    maxWait: 60000 #获取连接时最大等待时间，单位毫秒
+    timeBetweenEvictionRunsMillis: 60000 #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+    minEvictableIdleTimeMillis: 300000   #配置一个连接在池中最小生存的时间，单位是毫秒
+    validationQuery: SELECT 1 from DUAL  #测试连接
+    testWhileIdle: true                  #申请连接的时候检测，建议配置为true，不影响性能，并且保证安全性
+    testOnBorrow: false                  #获取连接时执行检测，建议关闭，影响性能
+    testOnReturn: false                  #归还连接时执行检测，建议关闭，影响性能
+    poolPreparedStatements: false        #是否开启PSCache，PSCache对支持游标的数据库性能提升巨大，oracle建议开启，mysql下建议关闭
+    maxPoolPreparedStatementPerConnectionSize: 20 #开启poolPreparedStatements后生效
+    filters: stat,wall,log4j #配置扩展插件，常用的插件有=>stat:监控统计  log4j:日志  wall:防御sql注入
+    connectionProperties: 'druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000' #通过connectProperties属性来打开mergeSql功能;慢SQL记录
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://localhost:1111/eureka/
+
+mybatis:
+  type-aliases-package: com.curise.eshop.common.entity
+  configuration:
+    map-underscore-to-camel-case: true  #开启驼峰命名,l_name -> lName
+    jdbc-type-for-null: NULL
+    lazy-loading-enabled: true
+    aggressive-lazy-loading: true
+    cache-enabled: true #开启二级缓存
+    call-setters-on-nulls: true #map空列不显示问题
+  mapper-locations:
+    - classpath:mybatis/*.xml

@@ -1,0 +1,66 @@
+server:
+  port: 1202
+
+spring:
+  application:
+    name: eshop-gateway
+
+#--------------------eureka---------------------
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://localhost:1111/eureka/
+
+#--------------------Zuul-----------------------
+zuul:
+  routes:
+    member:
+      path: /member/**
+      serviceId: eshop-member
+      sensitiveHeaders: "*"
+    auth:
+      path: /auth/**
+      serviceId: eshop-auth
+      sensitiveHeaders: "*"
+  retryable: false
+  ignored-services: "*"
+  ribbon:
+    eager-load:
+      enabled: true
+  host:
+    connect-timeout-millis: 3000
+    socket-timeout-millis: 3000
+  add-proxy-headers: true
+
+
+#---------------------OAuth2---------------------
+security:
+  oauth2:
+    client:
+      access-token-uri: http://localhost:${server.port}/auth/oauth/token
+      user-authorization-uri: http://localhost:${server.port}/auth/oauth/authorize
+      client-id: web
+    resource:
+      user-info-uri:  http://localhost:${server.port}/auth/api/member
+      prefer-token-info: false
+
+#----------------------超时配置-------------------
+ribbon:
+  ReadTimeout: 3000
+  ConnectTimeout: 3000
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServer: 2
+  eureka:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 3500
