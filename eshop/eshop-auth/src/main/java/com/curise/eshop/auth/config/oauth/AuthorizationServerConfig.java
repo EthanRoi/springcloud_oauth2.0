@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
 import javax.sql.DataSource;
 
@@ -49,6 +50,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return new RedisTokenStore(redisConnectionFactory);
     }
 
+    @Primary
+    @Bean
+    public TokenStore jdbcTokenStore(){
+        return new JdbcTokenStore(dataSource);
+    }
+
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
         security
@@ -59,20 +66,20 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-       // clients.withClientDetails(clientDetails());
-        clients.inMemory()
-                .withClient("android")
-                .scopes("read")
-                .secret("android")
-                .authorizedGrantTypes("password", "authorization_code", "refresh_token")
-                .and()
-                .withClient("webapp")
-                .scopes("read")
-                .authorizedGrantTypes("implicit")
-                .and()
-                .withClient("browser")
-                .authorizedGrantTypes("refresh_token", "password")
-                .scopes("read");
+        clients.withClientDetails(clientDetails());
+//        clients.inMemory()
+//                .withClient("android")
+//                .scopes("read")
+//                .secret("android")
+//                .authorizedGrantTypes("password", "authorization_code", "refresh_token")
+//                .and()
+//                .withClient("webapp")
+//                .scopes("read")
+//                .authorizedGrantTypes("implicit")
+//                .and()
+//                .withClient("browser")
+//                .authorizedGrantTypes("refresh_token", "password")
+//                .scopes("read");
     }
     @Bean
     public ClientDetailsService clientDetails() {
@@ -86,7 +93,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.tokenStore(tokenStore())
+        endpoints.tokenStore(jdbcTokenStore())
                 .userDetailsService(userDetailService)
                 .authenticationManager(authenticationManager);
         endpoints.tokenServices(defaultTokenServices());
@@ -102,9 +109,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Bean
     public DefaultTokenServices defaultTokenServices(){
         DefaultTokenServices tokenServices = new DefaultTokenServices();
-        tokenServices.setTokenStore(tokenStore());
+        tokenServices.setTokenStore(jdbcTokenStore());
         tokenServices.setSupportRefreshToken(true);
-        //tokenServices.setClientDetailsService(clientDetails());
         // token有效期自定义设置，默认12小时
         tokenServices.setAccessTokenValiditySeconds(60*60*12);
         // refresh_token默认30天
